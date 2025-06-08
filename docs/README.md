@@ -1,178 +1,194 @@
-# API Ollama
+# Ollama API - Detailed Documentation
 
-Un'API REST per interfacciarsi con Ollama e i modelli di linguaggio locali.
+## Table of Contents
+1. [Overview](#overview)
+2. [Installation](#installation)
+3. [Configuration](#configuration)
+4. [API Endpoints](#api-endpoints)
+5. [Security](#security)
+6. [Examples](#examples)
+7. [Troubleshooting](#troubleshooting)
 
-## Installazione
+## Overview
 
-1. Assicurati di avere Ollama installato e in esecuzione sul tuo sistema
-2. Installa le dipendenze Python:
+This API provides a REST interface to interact with Ollama and local language models. It allows you to:
+- Generate text using various models
+- Manage chat conversations
+- Control Ollama processes
+- Download and manage models
 
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/fdemusso/OllamaRemoteAPI.git
+cd IA_API
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Avvio
+3. Create configuration file:
+```bash
+cp .env.example .env
+```
 
-### Avvio Semplice (solo locale)
+4. Start the API:
 ```bash
 python app.py
 ```
 
-### Avvio con Accesso da Rete Locale (Windows)
-```bash
-# Eseguire come Amministratore per configurare automaticamente il firewall
-start_api.bat
+## Configuration
+
+### Environment Variables
+
+Create a `.env` file with the following settings:
+
+```env
+# Server Configuration
+API_HOST=0.0.0.0
+API_PORT=5000
+API_DEBUG=True
+
+# Ollama Configuration
+OLLAMA_HOST=localhost
+OLLAMA_PORT=11434
+
+# Security (optional)
+API_KEY=your_secret_key
+ALLOWED_IPS=192.168.1.100,192.168.1.101
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FILE=logs/api.log
 ```
 
-### Avvio Manuale con Rete Locale
-```bash
-python app.py
+## API Endpoints
+
+### Health Check
+```http
+GET /health
 ```
+Returns API status and configuration.
 
-L'API sarà disponibile:
-- **Localmente**: `http://localhost:5000`
-- **Da rete locale**: `http://[IP_DELLA_MACCHINA]:5000` (mostrato all'avvio)
+### Text Generation
+```http
+POST /generate
+Content-Type: application/json
 
-## Test da Rete Locale
-
-Per testare l'API da un altro computer nella rete locale:
-
-```bash
-# Test locale
-python test_api.py
-
-# Test da computer remoto (sostituire con l'IP del server)
-python test_remote_api.py 192.168.1.100
-
-# Test veloce senza generazione
-python test_remote_api.py 192.168.1.100 --skip-generate
-```
-
-## Endpoints
-
-### 1. Health Check
-- **GET** `/health`
-- Verifica lo stato dell'API
-
-```bash
-curl http://localhost:5000/health
-```
-
-### 2. Generazione Risposta
-- **POST** `/generate`
-- Genera una risposta usando un modello specifico
-
-```bash
-curl -X POST http://localhost:5000/generate \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama2",
-    "prompt": "Ciao, come stai?"
-  }'
-```
-
-### 3. Chat
-- **POST** `/chat`
-- Conversazione con il modello usando il formato chat
-
-```bash
-curl -X POST http://localhost:5000/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama2",
-    "messages": [
-      {"role": "user", "content": "Ciao, come stai?"}
-    ]
-  }'
-```
-
-### 4. Lista Modelli
-- **GET** `/list`
-- Ottiene la lista dei modelli disponibili
-
-```bash
-curl http://localhost:5000/list
-```
-
-### 5. Status Processi
-- **GET** `/ps`
-- Mostra i processi Ollama in esecuzione
-
-```bash
-curl http://localhost:5000/ps
-```
-
-### 6. Ferma Modello
-- **POST** `/stop`
-- Ferma un modello specifico
-
-```bash
-curl -X POST http://localhost:5000/stop \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama2"
-  }'
-```
-
-### 7. Scarica Modello
-- **POST** `/pull`
-- Scarica un nuovo modello
-
-```bash
-curl -X POST http://localhost:5000/pull \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "llama2"
-  }'
-```
-
-## Formati di Risposta
-
-Tutte le risposte sono in formato JSON con la struttura:
-
-```json
 {
-  "status": "success|error",
-  "data": "...",
-  "error": "messaggio di errore (se presente)"
+    "model": "gemma3:12b",
+    "prompt": "Your prompt here",
+    "stream": false
 }
 ```
 
-## Prerequisiti
+### Chat
+```http
+POST /chat
+Content-Type: application/json
 
-- Python 3.7+
-- Ollama installato e configurato
-- I modelli desiderati scaricati tramite `ollama pull <model_name>`
+{
+    "model": "gemma3:12b",
+    "messages": [
+        {"role": "user", "content": "Hello!"}
+    ]
+}
+```
 
-## Risoluzione Problemi Rete Locale
+### Model Management
+```http
+GET /list
+POST /pull
+POST /stop
+GET /ps
+```
 
-Se l'API non è accessibile da altri computer:
+## Security
 
-1. **Verifica Firewall Windows**:
-   ```bash
-   # Aggiungi regola manualmente (come Amministratore)
-   netsh advfirewall firewall add rule name="Ollama API" dir=in action=allow protocol=TCP localport=5000
-   ```
+### API Key Authentication
+Add the API key to requests:
+```http
+X-API-Key: your_secret_key
+```
 
-2. **Verifica IP del Server**:
-   - Esegui `ipconfig` sul server per trovare l'IP locale
-   - Usa l'endpoint `/health` per vedere l'IP rilevato automaticamente
+### IP Filtering
+Configure allowed IPs in `.env`:
+```env
+ALLOWED_IPS=192.168.1.100,192.168.1.101
+```
 
-3. **Test Connettività**:
-   ```bash
-   # Dal computer client, testa la porta
-   telnet [IP_SERVER] 5000
-   ```
+## Examples
 
-4. **Controlla Configurazione di Rete**:
-   - Assicurati che entrambi i computer siano sulla stessa rete
-   - Disabilita temporaneamente firewall/antivirus per test
-   - Verifica che non ci siano proxy o VPN attive
+### Python
+```python
+import requests
 
-## Note
+API_URL = "http://localhost:5000"
+API_KEY = "your_secret_key"
 
-- L'API supporta CORS per l'uso da applicazioni web
-- I log sono configurati per tracciare le operazioni
-- Gli errori sono gestiti e restituiti in formato JSON strutturato
-- Il server è configurato per `host='0.0.0.0'` per accesso da rete locale
-- L'IP locale viene rilevato automaticamente e mostrato all'avvio 
+headers = {
+    "X-API-Key": API_KEY,
+    "Content-Type": "application/json"
+}
+
+# Generate text
+response = requests.post(
+    f"{API_URL}/generate",
+    headers=headers,
+    json={
+        "model": "gemma3:12b",
+        "prompt": "Hello, how are you?"
+    }
+)
+print(response.json())
+```
+
+### JavaScript
+```javascript
+const API_URL = "http://localhost:5000";
+const API_KEY = "your_secret_key";
+
+async function generateText() {
+    const response = await fetch(`${API_URL}/generate`, {
+        method: "POST",
+        headers: {
+            "X-API-Key": API_KEY,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            model: "gemma3:12b",
+            prompt: "Hello, how are you?"
+        })
+    });
+    const data = await response.json();
+    console.log(data);
+}
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Connection Refused**
+   - Check if Ollama is running
+   - Verify port configuration
+   - Check firewall settings
+
+2. **Model Not Found**
+   - Ensure model is downloaded: `ollama pull <model_name>`
+   - Check model name spelling
+
+3. **Authentication Failed**
+   - Verify API key configuration
+   - Check IP restrictions
+
+### Logs
+
+Check the logs in `logs/api.log` for detailed error information.
+
+---
+
+For more help, open an issue on GitHub or contact the maintainers. 

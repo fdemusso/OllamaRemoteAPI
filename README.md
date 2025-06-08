@@ -1,109 +1,109 @@
-# API Ollama
+# Ollama API
 
-Un'API REST professionale per interfacciarsi con Ollama e i modelli di linguaggio locali.
+A professional REST API to interface with Ollama and local language models.
 
-## 🚀 Avvio Rapido
+## 🚀 Quick Start
 
 ```bash
-# Installa le dipendenze
+# Install dependencies
 pip install -r requirements.txt
 
-# Avvia l'API
+# Start the API
 python app.py
 ```
 
-L'API sarà disponibile su:
-- **Locale**: `http://localhost:5000`
-- **Rete locale**: `http://[IP_TUA_MACCHINA]:5000`
+The API will be available at:
+- **Local**: `http://localhost:5000`
+- **Local Network**: `http://[YOUR_MACHINE_IP]:5000`
 
-## 📡 Endpoint Principali
+## 📡 Main Endpoints
 
-- `GET /health` - Stato dell'API
-- `POST /generate` - Generazione testo
-- `POST /chat` - Conversazioni chat
-- `GET /list` - Lista modelli
-- `POST /pull` - Scarica modelli
-- `POST /stop` - Ferma modelli
-- `GET /ps` - Status processi
+- `GET /health` - API status
+- `POST /generate` - Text generation
+- `POST /chat` - Chat conversations
+- `GET /list` - List models
+- `POST /pull` - Download models
+- `POST /stop` - Stop models
+- `GET /ps` - Process status
 
-## 🔧 Configurazione
+## 🔧 Configuration
 
-Crea un file `.env` nella root del progetto per personalizzare la configurazione:
+Create a `.env` file in the project root to customize the configuration:
 
 ```env
-# Configurazione Server
+# Server Configuration
 API_HOST=0.0.0.0
 API_PORT=5000
 API_DEBUG=True
 
-# Configurazione Ollama
+# Ollama Configuration
 OLLAMA_HOST=localhost
 OLLAMA_PORT=11434
 
-# Configurazione Sicurezza (opzionale)
+# Security Configuration (optional)
 API_KEY=your_secret_api_key
 ALLOWED_IPS=192.168.1.100,192.168.1.101
 
-# Configurazione Logging
+# Logging Configuration
 LOG_LEVEL=INFO
 LOG_FILE=logs/api.log
 ```
 
-## 📚 Documentazione
+## 📚 Documentation
 
-- [**Documentazione Completa**](docs/README.md) - Guida dettagliata
-- [**Esempi di Test**](tests/) - Script di test e esempi
-- [**Script di Utilità**](scripts/) - Script di avvio e configurazione
+- [**Complete Documentation**](docs/README.md) - Detailed guide
+- [**Test Examples**](tests/) - Test scripts and examples
+- [**Utility Scripts**](scripts/) - Startup and configuration scripts
 
-## 🏗️ Struttura del Progetto
+## 🏗️ Project Structure
 
 ```
 IA_API/
-├── src/                 # Codice sorgente
-│   ├── api.py          # API principale
+├── src/                 # Source code
+│   ├── api.py          # Main API
 │   ├── utils.py        # Utilities
 │   └── __init__.py     # Package init
-├── config/             # Configurazione
-│   └── settings.py     # Impostazioni
-├── tests/              # Test
-│   ├── test_api.py     # Test locali
-│   └── test_remote_api.py  # Test rete
-├── scripts/            # Script
-│   └── start_api.bat   # Avvio Windows
-├── docs/               # Documentazione
-│   └── README.md       # Docs dettagliate
+├── config/             # Configuration
+│   └── settings.py     # Settings
+├── tests/              # Tests
+│   ├── test_api.py     # Local tests
+│   └── test_remote_api.py  # Network tests
+├── scripts/            # Scripts
+│   └── start_api.bat   # Windows startup
+├── docs/               # Documentation
+│   └── README.md       # Detailed docs
 ├── app.py              # Entry point
-├── requirements.txt    # Dipendenze
-└── .env.example        # Esempio configurazione
+├── requirements.txt    # Dependencies
+└── .env.example        # Configuration example
 ```
 
-## 🔒 Sicurezza
+## 🔒 Security
 
-L'API supporta:
-- **Autenticazione API Key** (opzionale)
-- **Filtraggio IP** (opzionale)
-- **CORS configurabile**
-- **Validazione input**
-- **Rate limiting** (configurabile)
+The API supports:
+- **API Key Authentication** (optional)
+- **IP Filtering** (optional)
+- **Configurable CORS**
+- **Input Validation**
+- **Rate Limiting** (configurable)
 
-## 📋 Prerequisiti
+## 📋 Prerequisites
 
 - Python 3.7+
-- Ollama installato e in esecuzione
-- Modelli Ollama scaricati (`ollama pull <model_name>`)
+- Ollama installed and running
+- Ollama models downloaded (`ollama pull <model_name>`)
 
-## 🤝 Contributi
+## 🤝 Contributions
 
-Benvenuti contributi! Per favore:
-1. Fork del repository
-2. Crea un branch per la tua feature
-3. Commit delle modifiche
-4. Push al branch
-5. Apri una Pull Request
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-## 📄 Licenza
+## 📄 License
 
-Questo progetto è rilasciato sotto licenza MIT. Vedi il file LICENSE per i dettagli.
+This project is released under the MIT license. See the LICENSE file for details.
 
 ---
 
