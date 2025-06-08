@@ -14,6 +14,8 @@ import subprocess
 from typing import Dict, Any, Optional
 import sys
 import os
+import time
+from collections import defaultdict, deque
 
 # Aggiungi la cartella parent al path per importare config
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -57,17 +59,41 @@ CORS(app,
      origins=config.get_cors_origins_list(),
      methods=config.CORS_METHODS.split(','))
 
+# Rate limiting storage (in produzione si userebbe Redis)
+rate_limit_storage = defaultdict(lambda: deque())
+
 # === MIDDLEWARE DI SICUREZZA ===
 @app.before_request
 def security_middleware():
     """
     Middleware di sicurezza applicato a tutte le richieste.
     
-    Controlla l'autenticazione API key e gli IP consentiti se configurati.
+    Controlla l'autenticazione API key, gli IP consentiti e il rate limiting se configurati.
     """
     # Salta il controllo per l'endpoint di health check
     if request.path == '/health':
         return
+    
+    # Rate limiting (se abilitato)
+    if config.RATE_LIMIT_ENABLED:
+        client_ip = request.remote_addr
+        current_time = time.time()
+        
+        # Pulisci le richieste più vecchie di 60 secondi
+        request_times = rate_limit_storage[client_ip]
+        while request_times and current_time - request_times[0] > 60:
+            request_times.popleft()
+        
+        # Controlla se ha superato il limite
+        if len(request_times) >= config.RATE_LIMIT_PER_MINUTE:
+            logger.warning(f"Rate limit superato per IP: {client_ip}")
+            return jsonify(create_error_response(
+                f"Rate limit superato: massimo {config.RATE_LIMIT_PER_MINUTE} richieste per minuto",
+                "RATE_LIMIT_EXCEEDED"
+            )), 429
+        
+        # Aggiungi la richiesta corrente
+        request_times.append(current_time)
     
     # Controllo IP consentiti (se configurato)
     allowed_ips = config.get_allowed_ips_list()
@@ -102,7 +128,7 @@ def health_check():
     local_ip = get_local_ip()
     ollama_status = health_check_ollama(config.OLLAMA_BASE_URL)
     
-    return jsonify({
+    health_info = {
         "status": "ok",
         "message": "API Ollama funzionante",
         "version": "1.0.0",
@@ -110,6 +136,17 @@ def health_check():
         "server_url": f"http://{local_ip}:{config.PORT}",
         "ollama_status": "online" if ollama_status else "offline",
         "ollama_url": config.OLLAMA_BASE_URL,
+        "configuration": {
+            "debug": config.DEBUG,
+            "api_key_required": bool(config.API_KEY),
+            "ip_filtering": bool(config.get_allowed_ips_list()),
+            "rate_limiting": {
+                "enabled": config.RATE_LIMIT_ENABLED,
+                "requests_per_minute": config.RATE_LIMIT_PER_MINUTE if config.RATE_LIMIT_ENABLED else None
+            },
+            "cors_origins": config.CORS_ORIGINS,
+            "log_level": config.LOG_LEVEL
+        },
         "endpoints": {
             "health": f"GET http://{local_ip}:{config.PORT}/health",
             "generate": f"POST http://{local_ip}:{config.PORT}/generate",
@@ -119,7 +156,9 @@ def health_check():
             "stop": f"POST http://{local_ip}:{config.PORT}/stop",
             "pull": f"POST http://{local_ip}:{config.PORT}/pull"
         }
-    })
+    }
+    
+    return jsonify(health_info)
 
 
 # === ENDPOINT GENERAZIONE TESTO ===
@@ -163,7 +202,7 @@ def generate_response():
             model=model,
             prompt=prompt,
             stream=stream,
-            options=options
+            options={**options, 'timeout': config.OLLAMA_TIMEOUT}
         )
         
         # Formatta la risposta
@@ -243,7 +282,7 @@ def chat():
             model=model,
             messages=messages,
             stream=stream,
-            options=options
+            options={**options, 'timeout': config.OLLAMA_TIMEOUT}
         )
         
         # Formatta la risposta
@@ -461,8 +500,8 @@ def pull_model():
         
         logger.info(f"Scaricando modello: {model}")
         
-        # Usa la libreria ollama per il pull
-        ollama.pull(model)
+        # Usa la libreria ollama per il pull con timeout
+        ollama.pull(model, timeout=config.OLLAMA_TIMEOUT)
         
         result_data = {
             "model": model,

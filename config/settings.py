@@ -26,6 +26,7 @@ class Config:
     OLLAMA_HOST: str = os.getenv('OLLAMA_HOST', 'localhost')
     OLLAMA_PORT: int = int(os.getenv('OLLAMA_PORT', '11434'))
     OLLAMA_BASE_URL: str = f"http://{OLLAMA_HOST}:{OLLAMA_PORT}"
+    OLLAMA_TIMEOUT: int = int(os.getenv('OLLAMA_TIMEOUT', '3600'))  # Timeout specifico per Ollama
     
     # === CONFIGURAZIONE LOGGING ===
     LOG_LEVEL: str = os.getenv('LOG_LEVEL', 'INFO')
@@ -46,7 +47,7 @@ class Config:
     ALLOWED_IPS: Optional[str] = os.getenv('ALLOWED_IPS')  # IPs consentiti (CSV)
     
     # === CONFIGURAZIONE RATE LIMITING ===
-    RATE_LIMIT_ENABLED: bool = os.getenv('RATE_LIMIT_ENABLED', 'False').lower() == 'true'
+    RATE_LIMIT_ENABLED: bool = os.getenv('RATE_LIMITING', 'False').lower() == 'true'  # Correzione nome variabile
     RATE_LIMIT_PER_MINUTE: int = int(os.getenv('RATE_LIMIT_PER_MINUTE', '60'))
     
     @classmethod
